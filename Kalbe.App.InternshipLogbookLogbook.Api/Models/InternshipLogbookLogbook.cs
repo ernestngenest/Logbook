@@ -10,6 +10,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
         [Required]
         public string Name { get; set; }
         public string Upn { get; set; }
+        public string DocNo { get; set; }
 
         //public string DepartmentCode { get; set; }
         [Required]
@@ -26,6 +27,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
         public long Allowance { get; set; }
         public int WFHCount { get; set; }
         public int WFOCount { get; set; }
+        public string Status { get; set; }
 
         //set relasi
         public List<LogbookDays> LogbookDays { get; set; } = new List<LogbookDays>();

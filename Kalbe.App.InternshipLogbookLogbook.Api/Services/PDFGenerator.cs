@@ -6,6 +6,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
     public interface IPDFGenerator
     {
         byte[] GeneratePDF(string htmlContent);
+        string ImageUrl(string imageName);
     } 
     public class PDFGenerator : IPDFGenerator
     {
@@ -41,6 +42,15 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             };
 
             return _converter.Convert(document);
+        }
+
+        public string ImageUrl(string imageName)
+        {
+            var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads\\", imageName);
+            return "<img src=\"data:image/"
+                        + Path.GetExtension(imageName).Replace(".", "")
+                        + ";base64,"
+                        + Convert.ToBase64String(File.ReadAllBytes(imagePath)) + "\" style=\"width: 60px;\" />";
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public static class Constant
     {
-        public static readonly string SystemCode = "{SYSTEMCODE}";
-        public static readonly string ModuleCode = "{MODULECODE}";
+        public static readonly string SystemCode = "ELOGBOOK";
+        public static readonly string ModuleCode = "ELOG";
     }
 }

@@ -111,6 +111,9 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
                         .IsRequired()
                         .HasColumnType("citext");
 
+                    b.Property<string>("DocNo")
+                        .HasColumnType("citext");
+
                     b.Property<string>("FacultyCode")
                         .HasColumnType("citext");
 
@@ -136,6 +139,9 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
                         .IsRequired()
                         .HasColumnType("citext");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("citext");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("citext");
 
@@ -148,14 +154,8 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
                     b.Property<string>("Upn")
                         .HasColumnType("citext");
 
-                    b.Property<string>("WFH")
-                        .HasColumnType("citext");
-
                     b.Property<int>("WFHCount")
                         .HasColumnType("integer");
-
-                    b.Property<string>("WFO")
-                        .HasColumnType("citext");
 
                     b.Property<int>("WFOCount")
                         .HasColumnType("integer");
@@ -177,8 +177,8 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
                         .IsRequired()
                         .HasColumnType("citext");
 
-                    b.Property<string>("AllowanceFee")
-                        .HasColumnType("citext");
+                    b.Property<long>("AllowanceFee")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("citext");

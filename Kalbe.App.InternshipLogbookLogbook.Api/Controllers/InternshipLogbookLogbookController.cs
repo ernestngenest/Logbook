@@ -37,9 +37,9 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Controllers
         }
 
         [HttpPost("GeneratePDF")]
-        public async Task<IActionResult> GeneratePDF()
+        public async Task<IActionResult> GeneratePDF([FromBody] Models.InternshipLogbookLogbook data)
         {
-            var result = await _internshipLogbookLogbookService.GeneratePDF();
+            var result = await _internshipLogbookLogbookService.GeneratePDF(data);
             return File(result, "application/pdf", "generated.pdf");
         }
     }

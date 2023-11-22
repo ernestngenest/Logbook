@@ -76,6 +76,8 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             services.AddScoped<ILoggerHelper, LoggerHelper>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             services.AddScoped<IPDFGenerator, PDFGenerator>();
+            services.AddScoped<IGlobalHelper, GlobalHelper>();
+            services.AddHttpClient<IMasterClientService, MasterClientService>();
             return services;
         }
 
