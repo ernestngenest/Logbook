@@ -6,6 +6,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
     {
         public string MentorUPN { get; set; }
         public string MentorName { get; set; }
+        public string MentorEmail { get; set; }
     }
 
     public class UserInternal

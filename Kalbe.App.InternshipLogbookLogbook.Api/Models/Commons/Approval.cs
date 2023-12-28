@@ -110,4 +110,9 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models.Commons
         public bool Success { get; set; }
         public string Message { get; set; }
     }
+
+    public class Comment
+    {
+        public string Alasan { get; set; }
+    }
 }

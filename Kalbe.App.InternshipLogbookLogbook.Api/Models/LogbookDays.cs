@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
 {
+    [Table("d_LogbookDays")]
     public class LogbookDays : Base
     {
         [Required]

@@ -71,6 +71,8 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                 });
             });
 
+
+            services.Configure<AppSettingModel>(opt => configuration.GetSection("ApiUrl").Bind(opt));
             services.AddScoped<IInternshipLogbookLogbookService, InternshipLogbookLogbookService>();
             services.AddScoped<ILogbookDaysService, LogbookDaysService>();
             services.AddScoped<ILoggerHelper, LoggerHelper>();

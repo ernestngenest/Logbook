@@ -23,7 +23,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Utilities
                 string docNo = "";
                 var latestNo = GetLatestNo();
 
-                docNo = latestNo + "/ELOG/" + DateTime.Now.ToString("yyyy");
+                docNo = latestNo + "/LOGB/" + DateTime.Now.ToString("yyyy");
 
                 return docNo;
 

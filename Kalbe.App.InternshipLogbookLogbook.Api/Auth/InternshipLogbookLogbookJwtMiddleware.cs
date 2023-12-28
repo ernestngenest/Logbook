@@ -8,12 +8,10 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Auth
     public class InternshipLogbookLogbookJwtMiddleware : JwtMiddleware
     {
         private readonly IConfiguration _configuration;
-        private readonly IDistributedCache _cache;
 
-        public InternshipLogbookLogbookJwtMiddleware(RequestDelegate next, IConfiguration configuration, IDistributedCache cache) : base(next, configuration)
+        public InternshipLogbookLogbookJwtMiddleware(RequestDelegate next, IConfiguration configuration) : base(next, configuration)
         {
             _configuration = configuration;
-            _cache = cache;
         }
 
         protected override void AttachUserToContext(HttpContext context, string token)
@@ -33,13 +31,9 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Auth
                 }
                 else
                 {
-                    var cacheValue = _cache.GetString(token);
-                    if (string.IsNullOrEmpty(cacheValue))
-                    {
-                        throw new InvalidOperationException("Cache is empty");
-                    }
+                  
 
-                    if (Utils.IsTokenValid(cacheValue, _configuration.GetSection("AppJwtSecret").Value, out JwtSecurityToken validToken) && context != null)
+                    if (Utils.IsTokenValid(token, _configuration.GetSection("AppJwtSecret").Value, out JwtSecurityToken validToken) && context != null)
                     {
                         context.User = new ClaimsPrincipal(new ClaimsIdentity(validToken.Claims));
                     }

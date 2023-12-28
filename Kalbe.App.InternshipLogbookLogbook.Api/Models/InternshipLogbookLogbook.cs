@@ -15,7 +15,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
         //public string DepartmentCode { get; set; }
         [Required]
         public string DepartmentName { get; set; }
-        public long SchoolCode { get; set; }
+        public string SchoolCode { get; set; }
         [Required]
         public string SchoolName { get; set; }
         public string FacultyCode { get; set; }

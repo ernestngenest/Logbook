@@ -3,6 +3,7 @@ using System;
 using Kalbe.App.InternshipLogbookLogbook.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
 {
     [DbContext(typeof(InternshipLogbookLogbookDataContext))]
-    partial class InternshipLogbookLogbookDataContextModelSnapshot : ModelSnapshot
+    [Migration("20231123042757_changeSchoolCodeTostring")]
+    partial class changeSchoolCodeTostring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,7 +220,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Migrations
 
                     b.HasIndex("LogbookId");
 
-                    b.ToTable("d_LogbookDays");
+                    b.ToTable("LogbookDays");
                 });
 
             modelBuilder.Entity("Kalbe.App.InternshipLogbookLogbook.Api.Models.LogbookDays", b =>

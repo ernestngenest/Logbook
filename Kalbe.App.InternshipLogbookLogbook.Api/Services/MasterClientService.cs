@@ -14,6 +14,15 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
     {
         Task<Mentor> GetMentorByUPN(string upn);
         Task<UserInternal> GetUserInternalByUPN(string upn);
+        Task<bool> Approve(ApprovalTransactionData data);
+        Task<bool> DeleteWFAsync(ApprovalTransactionData data, bool notInsertApprovalLog);
+        Task<List<ApprovalTransactionDataModel>> GetApprovalMaster(string systemCode, string moduleCode);
+        Task<bool> Submit(ApprovalTransactionData data);
+        Task<bool> Reject(ApprovalLogModel approvalLogData);
+        Task<IEnumerable<ApprovalTransactionDataModel>> GetCurrentWF(string nomorDokumen);
+        Task<bool> SendEmail(Email data);
+        Task<AllowanceResponse> GetAllowanceByEducation(string educationCode);
+
     }
     public class MasterClientService : IMasterClientService
     {
@@ -104,7 +113,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync("GetData/" + systemCode + "/" + moduleCode);
+                var response = await _httpClient.GetAsync("Approval/GetData/" + systemCode + "/" + moduleCode);
                 response.EnsureSuccessStatusCode();
 
                 var listJSON = (await response.Content.ReadAsStringAsync());
@@ -148,6 +157,54 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             catch (Exception ex)
             {
                 throw new Exception("Workflow is currently running", ex);
+            }
+        }
+        public async Task<bool> Reject(ApprovalLogModel approvalLogData)
+        {
+            try
+            {
+                var listJSON = JsonSerializer.Serialize(approvalLogData, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true });
+                var content = new StringContent(listJSON, Encoding.UTF8, _settingModel.MediaType);
+                var response = await _httpClient.PutAsync("ApprovalDetails/Reject", content);
+                response.EnsureSuccessStatusCode();
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<bool> SendEmail(Email data)
+        {
+            try
+            {
+                var listJSON = JsonSerializer.Serialize(data, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true });
+                var content = new StringContent(listJSON, Encoding.UTF8, _settingModel.MediaType);
+                var response = await _httpClient.PostAsync("Email/SendEmail", content);
+                response.EnsureSuccessStatusCode();
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Email is not sent", ex);
+            }
+        }
+
+        public async Task<AllowanceResponse> GetAllowanceByEducation(string educationCode)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("Education/GetByEducation/" + educationCode);
+                response.EnsureSuccessStatusCode();
+
+                var listJSON = (await response.Content.ReadAsStringAsync());
+                AllowanceResponse allowanceResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<AllowanceResponse>(listJSON);
+                return allowanceResponse;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
             }
         }
     }
