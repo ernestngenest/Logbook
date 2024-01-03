@@ -26,6 +26,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
 {
     public interface IInternshipLogbookLogbookService : ISimpleBaseCrud<Models.InternshipLogbookLogbook>
     {
+        Task<IEnumerable<Models.InternshipLogbookLogbook>> GetLogbookData();
         Task<List<CalculatedWorkType>> CalculatedWorkTypeandAllowance(Models.InternshipLogbookLogbook data);
         Task<byte[]> GeneratePDF(Models.InternshipLogbookLogbook logbook);
         Task<string> UploadSign(IFormFile file);
@@ -200,6 +201,52 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             catch (Exception ex)
             {
                 await _dbContext.Database.RollbackTransactionAsync();
+                timerFunction.Stop();
+                logData.LogType = "Error";
+                logData.Message += "Error " + ex + ". Duration : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                await _loggerHelper.Save(logData);
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<Models.InternshipLogbookLogbook>> GetLogbookData()
+        {
+            #region log data
+            ActivityLog logData = new();
+            logData.CreatedDate = DateTime.Now;
+            logData.ModuleCode = _moduleCode;
+            logData.LogType = "Information";
+            logData.Activity = "Get Logbook Data";
+            var timer = new Stopwatch();
+            var timerFunction = new Stopwatch();
+            #endregion
+
+            try
+            {
+                timerFunction.Start();
+                timer.Start();
+                logData.ExternalEntity += "Start to get logbook data ";
+                logData.PayLoadType += "EF";
+
+                var data = _dbContext.InternshipLogbookLogbooks
+                            .AsNoTracking()
+                            .Include(s => s.LogbookDays.Where(x => !x.IsDeleted))
+                            .Where(s => s.Upn.Equals(cUpn))
+                            .ToList();
+
+                timer.Stop();
+                logData.ExternalEntity += "End get logbook data  duration : " + timer.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                timer.Reset();
+
+                timerFunction.Stop();
+                logData.Message += "Duration call get logbook data : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                await _loggerHelper.Save(logData);
+
+                return data;
+
+            }
+            catch (Exception ex)
+            {
                 timerFunction.Stop();
                 logData.LogType = "Error";
                 logData.Message += "Error " + ex + ". Duration : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";

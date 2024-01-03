@@ -23,6 +23,20 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Controllers
             _pdfGenerator = pdfGenerator;
         }
 
+        [HttpGet("GetLogbookData")]
+        public async Task<IActionResult> GetLogbookData()
+        {
+            try
+            {
+                var result = await _internshipLogbookLogbookService.GetLogbookData();
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                return BadRequest(x.Message.ToString());
+            }
+        }
+
         [HttpPut("CalculateWorkType")]
         public async Task<IActionResult> CalculateWorkTypeAsync([FromBody] Models.InternshipLogbookLogbook data)
         {
