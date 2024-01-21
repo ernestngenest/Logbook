@@ -26,15 +26,17 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
 {
     public interface IInternshipLogbookLogbookService : ISimpleBaseCrud<Models.InternshipLogbookLogbook>
     {
-        Task<IEnumerable<Models.InternshipLogbookLogbook>> GetLogbookData();
+        Task<PagedList<Models.InternshipLogbookLogbook>> GetLogbookData(PagedOptions pagedOptions);
         Task<List<CalculatedWorkType>> CalculatedWorkTypeandAllowance(Models.InternshipLogbookLogbook data);
         Task<byte[]> GeneratePDF(Models.InternshipLogbookLogbook logbook);
         Task<string> UploadSign(IFormFile file);
+        Task<string> PreviewSign();
         Task<List<string>> GetFilterMonth(DateTime start, DateTime end);
         Task<Models.InternshipLogbookLogbook> Save(Models.InternshipLogbookLogbook data);
         Task<Models.InternshipLogbookLogbook> Submit(Models.InternshipLogbookLogbook data);
         Task Revise(long id, string notes);
         Task Approve(long id);
+        Task<PagedList<Models.InternshipLogbookLogbook>> GetMentorTask(PagedOptions pagedOptions);
     }
 
     public class InternshipLogbookLogbookService : SimpleBaseCrud<Models.InternshipLogbookLogbook>, IInternshipLogbookLogbookService
@@ -182,7 +184,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                     await _dbContext.Database.BeginTransactionAsync();
                     var existingLogDays = await _dbContext.LogbookDays.AsNoTracking().Where(s => s.LogbookId == data.Id).ToListAsync();
 
-                    await _logbookDaysService.Update(existingLogDays, dataLogbook.LogbookDays);
+                    await _logbookDaysService.Update(existingLogDays, data.LogbookDays);
                     await _dbContext.SaveChangesAsync();
                     await _dbContext.Database.CommitTransactionAsync();
 
@@ -209,7 +211,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             }
         }
 
-        public async Task<IEnumerable<Models.InternshipLogbookLogbook>> GetLogbookData()
+        public async Task<PagedList<Models.InternshipLogbookLogbook>> GetLogbookData(PagedOptions pagedOptions)
         {
             #region log data
             ActivityLog logData = new();
@@ -223,6 +225,10 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
 
             try
             {
+                if (pagedOptions == null)
+                {
+                    throw new Exception("Pagedoptions is empty, please check header");
+                }
                 timerFunction.Start();
                 timer.Start();
                 logData.ExternalEntity += "Start to get logbook data ";
@@ -230,19 +236,30 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
 
                 var data = _dbContext.InternshipLogbookLogbooks
                             .AsNoTracking()
-                            .Include(s => s.LogbookDays.Where(x => !x.IsDeleted))
-                            .Where(s => s.Upn.Equals(cUpn))
-                            .ToList();
+                            .Include(s => s.LogbookDays.Where(x => !x.IsDeleted).OrderBy(x => x.Date))
+                            .Where(s => s.Upn.Equals(cUpn) && !s.IsDeleted);
 
                 timer.Stop();
                 logData.ExternalEntity += "End get logbook data  duration : " + timer.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                timer.Reset();
+
+                timer.Start();
+                logData.ExternalEntity += "2. Start Get Pagedlist";
+                logData.PayLoadType += "EF";
+
+
+
+                var result = await PagedList<Models.InternshipLogbookLogbook>.GetPagedList(data, pagedOptions);
+
+                timer.Stop();
+                logData.ExternalEntity += "End get pagedlist duration : " + timer.Elapsed.ToString(@"m\:ss\.fff") + ". ";
                 timer.Reset();
 
                 timerFunction.Stop();
                 logData.Message += "Duration call get logbook data : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";
                 await _loggerHelper.Save(logData);
 
-                return data;
+                return result;
 
             }
             catch (Exception ex)
@@ -389,6 +406,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                 if(_settingModel.EmailDummy)
                 {
                     email.EmailTo = _settingModel.RecipientEmail;
+                    email.EmailCC = _settingModel.RecipientEmail;
                 }
 
                 await _masterClient.SendEmail(email);
@@ -576,6 +594,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                     if (_settingModel.EmailDummy)
                     {
                         notification.EmailTo = _settingModel.RecipientEmail;
+                        notification.EmailCC = _settingModel.RecipientEmail;
                     }
 
                     //send email
@@ -587,7 +606,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                     #endregion
                     timer.Start();
                     logData.ExternalEntity += "4. Start update status ";
-                    dataLogbook.Status = "Waiting for revision from " + dataLogbook.Name;
+                    dataLogbook.Status = "Waiting for revision from " + dataLogbook.Name + " - " + notes;
                     _dbContext.Entry(dataLogbook).State = EntityState.Modified;
                     await _dbContext.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -732,6 +751,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                     if (_settingModel.EmailDummy)
                     {
                         email.EmailTo = _settingModel.RecipientEmail;
+                        email.EmailCC = _settingModel.RecipientEmail;
                     }
 
                     //send email
@@ -845,6 +865,25 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             return filename;
         }
 
+        public async Task<string> PreviewSign()
+        {
+            string imgUrl = "";
+            try
+            {
+                var user = await _masterClient.GetUserInternalByUPN(cUpn);
+                var name = user.Name.Replace(" ", "");
+                var imageName = Path.Combine(Directory.GetCurrentDirectory(), "Uploads\\", name);
+                var extension = Path.GetExtension(imageName);
+                imgUrl = imageName + extension;
+                return imgUrl;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+
+            }
+        }
+
         public async Task<byte[]> GeneratePDF(Models.InternshipLogbookLogbook logbook)
         {
 
@@ -883,6 +922,67 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
             // generate PDF
             byte[] pdfBytes = _pdfGenerator.GeneratePDF(htmlContent);
             return pdfBytes;
+        }
+
+        public async Task<PagedList<Models.InternshipLogbookLogbook>> GetMentorTask(PagedOptions pagedOptions)
+        {
+            #region log data
+            ActivityLog logData = new();
+            logData.CreatedDate = DateTime.Now;
+            logData.ModuleCode = _moduleCode;
+            logData.LogType = "Information";
+            logData.Activity = "Get Mentor Task";
+            var timer = new Stopwatch();
+            var timerFunction = new Stopwatch();
+            #endregion
+
+            try
+            {
+                if (pagedOptions == null)
+                {
+                    throw new Exception("Pagedoptions is empty, please check header");
+                }
+                timerFunction.Start();
+                timer.Start();
+                logData.ExternalEntity += "Start to get mentor task";
+                logData.PayLoadType += "EF";
+
+                var data = _dbContext.InternshipLogbookLogbooks
+                            .AsNoTracking()
+                            .Include(s => s.LogbookDays.Where(x => !x.IsDeleted).OrderBy(x => x.Date))
+                            .Where(s => s.Status.ToLower().Contains(cDisplayName.ToLower()) && !s.IsDeleted);
+
+                timer.Stop();
+                logData.ExternalEntity += "End get mentor task duration : " + timer.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                timer.Reset();
+
+                timer.Start();
+                logData.ExternalEntity += "2. Start Get Pagedlist";
+                logData.PayLoadType += "EF";
+
+
+
+                var result = await PagedList<Models.InternshipLogbookLogbook>.GetPagedList(data, pagedOptions);
+
+                timer.Stop();
+                logData.ExternalEntity += "End get pagedlist duration : " + timer.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                timer.Reset();
+
+                timerFunction.Stop();
+                logData.Message += "Duration call get mentor task data : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                await _loggerHelper.Save(logData);
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                timerFunction.Stop();
+                logData.LogType = "Error";
+                logData.Message += "Error " + ex + ". Duration : " + timerFunction.Elapsed.ToString(@"m\:ss\.fff") + ". ";
+                await _loggerHelper.Save(logData);
+                throw;
+            }
         }
     }
 }

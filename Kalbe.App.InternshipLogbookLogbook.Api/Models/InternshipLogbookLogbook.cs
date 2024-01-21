@@ -23,6 +23,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Models
         public string FacultyName { get; set; }
         [Required]
         public string Month { get; set; }
+        public string Year { get; set; }
         [Required]
         public long Allowance { get; set; }
         public int WFHCount { get; set; }

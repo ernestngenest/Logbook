@@ -1,6 +1,7 @@
 ﻿using Kalbe.App.InternshipLogbookLogbook.Api.Models.Commons;
 using Kalbe.App.InternshipLogbookLogbook.Api.Services;
 using Kalbe.Library.Common.EntityFramework.Controllers;
+using Kalbe.Library.Common.EntityFramework.Data;
 using Kalbe.Library.Data.EntityFrameworkCore.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class InternshipLogbookLogbookController : SimpleBaseCrudController<Models.InternshipLogbookLogbook>
     {
         private readonly IInternshipLogbookLogbookService _internshipLogbookLogbookService;
@@ -28,7 +30,12 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Controllers
         {
             try
             {
-                var result = await _internshipLogbookLogbookService.GetLogbookData();
+                PagedOptions pagedOptions = PagedOptions.GetPagedOptions(base.Request);
+                if (pagedOptions == null)
+                {
+                    return BadRequest("This request require pagination header parameter");
+                }
+                var result = await _internshipLogbookLogbookService.GetLogbookData(pagedOptions);
                 return Ok(result);
             }
             catch (Exception x)
@@ -155,6 +162,38 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Controllers
             try
             {
                 var result = await _internshipLogbookLogbookService.UploadSign(file);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                return BadRequest(x.Message.ToString());
+            }
+        }
+        [HttpGet("PreviewSign")]
+        public async Task<IActionResult> PreviewSign()
+        {
+            try
+            {
+                var result = await _internshipLogbookLogbookService.PreviewSign();
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                return BadRequest(x.Message.ToString());
+            }
+        }
+
+        [HttpGet("GetMentorTask")]
+        public async Task<IActionResult> GetMentorTask()
+        {
+            try
+            {
+                PagedOptions pagedOptions = PagedOptions.GetPagedOptions(base.Request);
+                if (pagedOptions == null)
+                {
+                    return BadRequest("This request require pagination header parameter");
+                }
+                var result = await _internshipLogbookLogbookService.GetMentorTask(pagedOptions);
                 return Ok(result);
             }
             catch (Exception x)
