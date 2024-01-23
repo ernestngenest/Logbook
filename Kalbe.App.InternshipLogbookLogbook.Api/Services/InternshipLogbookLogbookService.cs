@@ -37,6 +37,7 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
         Task Revise(long id, string notes);
         Task Approve(long id);
         Task<PagedList<Models.InternshipLogbookLogbook>> GetMentorTask(PagedOptions pagedOptions);
+        Task ReminderLogbook();
     }
 
     public class InternshipLogbookLogbookService : SimpleBaseCrud<Models.InternshipLogbookLogbook>, IInternshipLogbookLogbookService
@@ -983,6 +984,11 @@ namespace Kalbe.App.InternshipLogbookLogbook.Api.Services
                 await _loggerHelper.Save(logData);
                 throw;
             }
+        }
+
+        public Task ReminderLogbook()
+        {
+            throw new NotImplementedException();
         }
     }
 }

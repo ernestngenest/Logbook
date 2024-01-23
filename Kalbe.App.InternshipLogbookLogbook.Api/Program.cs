@@ -1,6 +1,9 @@
 using Elastic.Apm.NetCoreAll;
+using Hangfire;
+using Hangfire.PostgreSql;
 using HealthChecks.UI.Client;
 using Kalbe.App.InternshipLogbookLogbook.Api.Auth;
+using Kalbe.App.InternshipLogbookLogbook.Api.Job;
 using Kalbe.App.InternshipLogbookLogbook.Api.Models;
 using Kalbe.App.InternshipLogbookLogbook.Api.Services;
 using Kalbe.Library.Common.Logs;
@@ -8,6 +11,15 @@ using Kalbe.Library.Common.Logs;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRequiredServices(builder.Configuration, builder.Environment);
+builder.Services.AddHangfire(opt =>
+{
+    opt.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("PostgreSqlConnectionString"))
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings();
+});
+builder.Services.AddHangfireServer();
+builder.Services.AddMvc();
 
 var app = builder.Build();
 
@@ -40,6 +52,9 @@ app.MapHealthChecks("/hc-ui", new Microsoft.AspNetCore.Diagnostics.HealthChecks.
     Predicate = _ => true,
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
+app.UseHangfireDashboard();
+RecurringJob.AddOrUpdate<IReminderJob>(Guid.NewGuid().ToString(),
+    x => x.Execute(), Cron.Minutely);
 
 // Force database migration
 app.MigrateDbContext<InternshipLogbookLogbookDataContext>();

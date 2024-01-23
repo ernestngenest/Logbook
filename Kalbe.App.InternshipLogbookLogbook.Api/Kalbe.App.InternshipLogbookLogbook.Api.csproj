@@ -6,8 +6,15 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
-		<Version>0.1.0</Version>
+		<Version>0.1.1</Version>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Uploads\**" />
+	  <Content Remove="Uploads\**" />
+	  <EmbeddedResource Remove="Uploads\**" />
+	  <None Remove="Uploads\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
@@ -19,6 +26,9 @@
 		<PackageReference Include="Elastic.Apm.SerilogEnricher" Version="8.6.1" />
 		<PackageReference Include="Elastic.CommonSchema.Serilog" Version="8.6.1" />
 		<PackageReference Include="Elastic.Serilog.Sinks" Version="8.6.1" />
+		<PackageReference Include="Hangfire" Version="1.8.7" />
+		<PackageReference Include="Hangfire.Core" Version="1.8.7" />
+		<PackageReference Include="Hangfire.PostgreSql" Version="1.20.5" />
 		<PackageReference Include="Kalbe.Library.Data.EntityFrameworkCore" Version="6.0.11" />
 		<PackageReference Include="MassTransit" Version="8.0.3" />
 		<PackageReference Include="MassTransit.RabbitMQ" Version="8.0.3" />
@@ -37,7 +47,6 @@
 	<ItemGroup>
 		<Folder Include="Migrations\" />
 		<Folder Include="Font\" />
-		<Folder Include="Uploads\" />
 	</ItemGroup>
 
 </Project>
